@@ -10,8 +10,6 @@ public class NumberTest {
     @Test
     public void testToString() throws Exception {
         List<Integer> numberUnion = Arrays.asList(1, 8, 9, 2, 1);
-        List<Integer> before = Arrays.asList(1, 8, 9);
-        List<Integer> after = Arrays.asList(2, 1);
         assertEquals("189.21", new Number(3, 2, numberUnion).toString());
     }
 
