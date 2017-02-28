@@ -1,62 +1,52 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public final class Number {
 
-    private final int numberBefore;
+    private final int before;
 
-    private final int numberAfter;
+    private final int after;
 
-    private final List<Integer> before;
+    private final List<Integer> numberUnion;
 
-    private final List<Integer> after;
+    public Number(int before, int after,
+                  List<Integer> numberUnion) {
 
-    public Number(int numberBefore, int numberAfter,
-                  List before, List after) {
-        this.numberBefore = numberBefore;
-        this.numberAfter = numberAfter;
         this.before = before;
         this.after = after;
+        this.numberUnion = numberUnion;
     }
 
     public Number plus(Number other) {
 
-        List<Integer> resultBefore = new ArrayList<>();
-        List<Integer> resultAfter = new ArrayList<>();
-        int maxBefore = Math.max(numberBefore, other.numberBefore);
-        int maxAfter = Math.max(numberAfter, other.numberAfter);
+        List<Integer> result = new ArrayList<>();
+        int maxAfter = Math.max(after, other.after);
 
-        for (int i = 0; i < maxAfter - numberAfter; i++) {
-            after.add(0);
+        for (int i = 0; i < maxAfter - after; i++) {
+            numberUnion.add(0);
         }
 
-        for (int i = 0; i < maxAfter - other.numberAfter; i++) {
-            other.after.add(0);
+        for (int i = 0; i < maxAfter - other.after; i++) {
+            other.numberUnion.add(0);
         }
 
-        for (int i = 0; i < maxBefore - numberBefore; i++) {
-            before.add(0, 0);
+        int maxBefore = Math.max(before, other.before);
+
+        for (int i = 0; i < maxBefore - before; i++) {
+            numberUnion.add(0, 0);
         }
 
-        for (int i = 0; i < maxBefore - other.numberBefore; i++) {
-            other.before.add(0, 0);
+        for (int i = 0; i < maxBefore - other.before; i++) {
+            other.numberUnion.add(0, 0);
         }
 
         int excess = 0;
-        for (int i = maxAfter - 1; i >= 0; i--) {
-            resultAfter.add(0, (after.get(i) + other.after.get(i) + excess) % 10);
 
-            if (after.get(i) + other.after.get(i) + excess > 9) {
-                excess = 1;
-            } else {
-                excess = 0;
-            }
-        }
+        for (int i = maxBefore + maxAfter - 1; i >= 0; i--) {
+            result.add(0, (numberUnion.get(i) + other.numberUnion.get(i) + excess) % 10);
 
-        for (int i = maxBefore - 1; i >= 0; i--) {
-            resultBefore.add(0, (before.get(i) + other.before.get(i) + excess) % 10);
-
-            if (before.get(i) + other.before.get(i) + excess > 9) {
+            if (numberUnion.get(i) + other.numberUnion.get(i) + excess > 9) {
                 excess = 1;
             } else {
                 excess = 0;
@@ -64,31 +54,22 @@ public final class Number {
         }
 
         if (excess > 0) {
-            resultBefore.add(0, 1);
+            result.add(0, 1);
         }
-
-        return new Number(resultBefore.size(), resultAfter.size(), resultBefore, resultAfter);
+        return new Number(result.size() - maxAfter, maxAfter, result);
     }
 
-    private List<Integer> union(List before, List after) {
-        List result = new ArrayList();
-        result.add(before);
-        result.add(after);
-        return result;
-    }
-
-    private List<Integer> maxNumber(Number num1,
-                                    Number num2) {
-
+    private List<Integer> maxUnionNumber(Number numb1,
+                                         Number numb2) {
         List<Integer> list;
         List<Integer> otherList;
 
-        if (num1.equals(num2)) return union(num1.before, num2.after);
-        if (num1.numberBefore > num2.numberBefore) return union(num1.before, num1.after);
-        if (num1.numberBefore < num2.numberBefore) return union(num2.before, num2.after);
+        if (numb1.equals(numb2)) return numberUnion;
+        if (numb1.before > numb2.before) return numb1.numberUnion;
+        if (numb1.before < numb2.before) return numb2.numberUnion;
         else {
-            list = union(num1.before, num1.after);
-            otherList = union(num2.before, num2.after);
+            list = numb1.numberUnion;
+            otherList = numb2.numberUnion;
             int max = Math.max(list.size(), otherList.size());
             for (int i = 0; i < max - list.size(); i++) {
                 list.add(0);
@@ -101,50 +82,95 @@ public final class Number {
                 if (list.get(i) > otherList.get(i)) return list;
                 if (list.get(i) < otherList.get(i)) return otherList;
                 i++;
+
             }
         }
     }
 
-    @Override
-    public String toString() {
+    public Number minus(Number other) {
 
-        int i = 0;
-        String strNumberBefore = "";
-        while (numberBefore != i) {
-            strNumberBefore = strNumberBefore + before.get(i);
-            i++;
+        List<Integer> result = new ArrayList<>();
+        int maxAfter = Math.max(after, other.after);
+
+        for (int i = 0; i < maxAfter - after; i++) {
+            numberUnion.add(0);
         }
 
-        int j = 0;
-        String strNumberAfter = "";
-        while (numberAfter != j) {
-            strNumberAfter = strNumberAfter + after.get(j);
-            j++;
+        for (int i = 0; i < maxAfter - other.after; i++) {
+            other.numberUnion.add(0);
         }
 
-        String number = strNumberBefore + "." + strNumberAfter;
-        return number;
+        int maxBefore = Math.max(before, other.before);
+
+        for (int i = 0; i < maxBefore - before; i++) {
+            numberUnion.add(0, 0);
+        }
+
+        for (int i = 0; i < maxBefore - other.before; i++) {
+            other.numberUnion.add(0, 0);
+        }
+
+        List<Integer> maxNumber = maxUnionNumber(this, other);
+        List<Integer> minNumber;
+
+        if (maxNumber.equals(this.numberUnion)) {
+            minNumber = other.numberUnion;
+        } else {
+            minNumber = numberUnion;
+        }
+
+        Collections.reverse(maxNumber);
+        Collections.reverse(minNumber);
+
+        int shortcoming = 0;
+
+        for (int i = 0; i < maxNumber.size(); i++) {
+            if (maxNumber.get(i) - minNumber.get(i) - shortcoming < 0) {
+                result.add(0, maxNumber.get(i) - minNumber.get(i) - shortcoming + 10);
+                shortcoming = 1;
+            } else {
+                result.add(0, maxNumber.get(i) - minNumber.get(i) - shortcoming);
+                shortcoming = 0;
+            }
+        }
+        if (result.get(0) == 0) {
+            result.remove(0);
+        }
+        return new Number(result.size() - maxAfter, maxAfter, result);
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+    public String toString() {
+        StringBuilder result = new StringBuilder();
+        for (int i = 0; i < before; i++) {
+            result.append(numberUnion.get(i));
+        }
+        if (after != 0) result.append(".");
+        for (int j = before; j < before + after; j++) {
+            result.append(numberUnion.get(j));
+        }
+        return result.toString();
+    }
 
-        Number that = (Number) obj;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
-        if (numberBefore != that.numberBefore) return false;
-        if (numberAfter != that.numberAfter) return false;
-        if (!before.equals(that.before)) return false;
-        return after.equals(that.after);
+        Number number = (Number) o;
+
+        if (before != number.before) return false;
+        if (after != number.after) return false;
+        return numberUnion.equals(number.numberUnion);
+
     }
 
     @Override
     public int hashCode() {
-        int result = numberBefore;
-        result = 31 * result + numberAfter;
-        result = 31 * result + before.hashCode();
-        result = 31 * result + after.hashCode();
+        int result = before;
+        result = 31 * result + after;
+        result = 31 * result + numberUnion.hashCode();
         return result;
     }
 }
+
