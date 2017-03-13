@@ -12,13 +12,13 @@ public final class FractionalNumber {
 
     private final List<Integer> numberUnion;
 
-    private int sign;
+    private boolean sign = true;
 
-    private int signNull;
 
-    public FractionalNumber(int before, int after,
+    public FractionalNumber(boolean sign, int before, int after,
                             List<Integer> numberUnion) {
 
+        this.sign = sign;
         this.before = before;
         this.after = after;
         this.numberUnion = numberUnion;
@@ -33,16 +33,11 @@ public final class FractionalNumber {
         Matcher m = p.matcher(number);
         if (!m.find()) throw new NumberFormatException();
         if (m.group().charAt(0) == '-') {
-            sign = 1;
-            if(m.group().charAt(1) == '0'){
-                signNull = 1;
-            }
+            sign = false;
             i = 2;
-            result.add(-1 * (m.group().codePointAt(1) - '0'));
+            result.add(m.group().codePointAt(1) - '0');
             before++;
         }
-        else if (m.group().charAt(0) == '0')
-                signNull = 0;
 
         for (; i < m.group().length(); i++) {
             if (m.group().charAt(i) == '.') continue;
@@ -64,20 +59,7 @@ public final class FractionalNumber {
         List<Integer> result = new ArrayList<>();
         int maxAfter = Math.max(after, other.after);
 
-        if (((numberUnion.get(0) <= 0 && other.numberUnion.get(0) <= 0) || (numberUnion.get(0) >= 0 && other.numberUnion.get(0) >= 0))
-                && (signNull != 1 || other.signNull != 0) && (signNull != 0 || other.signNull != 1)){
-
-            if (numberUnion.get(0) < 0) {
-                sign = 1;
-                int per = numberUnion.get(0);
-                per *= -1;
-                numberUnion.remove(0);
-                numberUnion.add(0, per);
-                per = other.numberUnion.get(0);
-                per *= -1;
-                other.numberUnion.remove(0);
-                other.numberUnion.add(0, per);
-            }
+        if (sign == other.sign) {
 
             for (int i = 0; i < maxAfter - after; i++) {
                 numberUnion.add(0);
@@ -112,73 +94,20 @@ public final class FractionalNumber {
             if (excess > 0) {
                 result.add(0, 1);
             }
-            result.add(0,sign);
-
-            return new FractionalNumber(result.size() - maxAfter, maxAfter, result);
-        } else {
-
-            for (int i = 0; i < maxAfter - after; i++) {
-                numberUnion.add(0);
-            }
-
-            for (int i = 0; i < maxAfter - other.after; i++) {
-                other.numberUnion.add(0);
-            }
-
-            int maxBefore = Math.max(before, other.before);
-
-            for (int i = 0; i < maxBefore - before; i++) {
-                numberUnion.add(0, 0);
-            }
-
-            for (int i = 0; i < maxBefore - other.before; i++) {
-                other.numberUnion.add(0, 0);
-            }
 
             List<Integer> maxNumber = maxUnionNumber(this, other);
-            List<Integer> minNumber;
 
-            if (maxNumber.equals(this.numberUnion)) {
-                minNumber = other.numberUnion;
-            } else {
-                minNumber = numberUnion;
-            }
-            if (maxNumber.get(0) < 0) {
-                sign = 1;
+            if (maxNumber.equals(other.numberUnion)) {
+                sign = other.sign;
             }
 
-            int firstElement = maxNumber.get(0);
-            if (firstElement < 0) {
-                int per = maxNumber.get(0);
-                per *= -1;
-                maxNumber.remove(0);
-                maxNumber.add(0, per);
-            }
+            return new FractionalNumber(sign, result.size() - maxAfter, maxAfter, result);
+        } else {
+            other.sign = sign;
+            FractionalNumber number = this;
+            FractionalNumber number1 = other;
 
-            if (minNumber.get(0) < 0) {
-                int per = minNumber.get(0);
-                per *= -1;
-                minNumber.remove(0);
-                minNumber.add(0, per);
-            }
-
-            Collections.reverse(maxNumber);
-            Collections.reverse(minNumber);
-
-            int shortcoming = 0;
-
-            for (int i = 0; i < maxNumber.size(); i++) {
-                if (maxNumber.get(i) - minNumber.get(i) - shortcoming < 0) {
-                    result.add(0, maxNumber.get(i) - minNumber.get(i) - shortcoming + 10);
-                    shortcoming = 1;
-                } else {
-                    result.add(0, maxNumber.get(i) - minNumber.get(i) - shortcoming);
-                    shortcoming = 0;
-                }
-            }
-            result.add(0,sign);
-
-            return new FractionalNumber(result.size() - maxAfter, maxAfter, result);
+            return number.minus(number1);
         }
     }
 
@@ -247,8 +176,7 @@ public final class FractionalNumber {
 
     public FractionalNumber minus(FractionalNumber other) {
 
-        if ((numberUnion.get(0) >= 0 && other.numberUnion.get(0) >= 0) && (signNull != 1 || other.signNull != 0)
-                && (signNull != 0 || other.signNull != 1)) {
+        if ((sign == true && other.sign == true) || (sign == false && other.sign == false)) {
 
             List<Integer> result = new ArrayList<>();
             int maxAfter = Math.max(after, other.after);
@@ -278,7 +206,7 @@ public final class FractionalNumber {
                 minNumber = other.numberUnion;
             } else {
                 minNumber = numberUnion;
-                sign = 1;
+                sign = false;
             }
 
             Collections.reverse(maxNumber);
@@ -295,59 +223,21 @@ public final class FractionalNumber {
                     shortcoming = 0;
                 }
             }
-            result.add(0,sign);
 
-            return new FractionalNumber(result.size() - maxAfter, maxAfter, result);
+            return new FractionalNumber(sign, result.size() - maxAfter, maxAfter, result);
         } else {
-            if (signNull == 1 && other.signNull == 0) {
-                signNull = 2;
-                other.signNull = 2;
-            } else if(signNull == 0 && other.signNull == 1){
-                signNull = 2;
-                other.signNull = 2;
-            }
-            int per = other.numberUnion.get(0);
-            per *= -1;
-            other.numberUnion.remove(0);
-            other.numberUnion.add(0, per);
+            other.sign = sign;
             FractionalNumber number = this;
             FractionalNumber number1 = other;
+
             return number.plus(number1);
         }
     }
 
     public FractionalNumber multiplication(FractionalNumber other) {
 
-        if (numberUnion.get(0) < 0 && other.numberUnion.get(0) > 0) {
-            sign = 1;
-            int per = numberUnion.get(0);
-            per *= -1;
-            numberUnion.remove(0);
-            numberUnion.add(0, per);
-        }
-
-        if (numberUnion.get(0) > 0 && other.numberUnion.get(0) < 0) {
-            sign = 1;
-            int per = other.numberUnion.get(0);
-            per *= -1;
-            other.numberUnion.remove(0);
-            other.numberUnion.add(0, per);
-        }
-
-        if (numberUnion.get(0) < 0 && other.numberUnion.get(0) < 0) {
-            int per = numberUnion.get(0);
-            per *= -1;
-            numberUnion.remove(0);
-            numberUnion.add(0, per);
-            per = other.numberUnion.get(0);
-            per *= -1;
-            other.numberUnion.remove(0);
-            other.numberUnion.add(0, per);
-            sign = 0;
-        }
-
-        if (signNull == 1 && other.signNull == 1) sign = 0;
-        if ((signNull == 1 && other.signNull == 0) || (signNull == 0 && other.signNull == 1)) sign = 1;
+        if ((sign == true && other.sign == true) || (sign == false && other.sign == false)) sign = true;
+        else sign = false;
 
         List<Integer> result = new ArrayList<>();
         Collections.reverse(numberUnion);
@@ -373,21 +263,19 @@ public final class FractionalNumber {
             }
         }
         int resultAfter = after + other.after;
-        int resultBefor = result.size() - resultAfter + 1;
+        int resultBefor = result.size() - resultAfter;
         Collections.reverse(result);
-        result.add(0,sign);
 
-        return new FractionalNumber(resultBefor, resultAfter, result);
+        return new FractionalNumber(sign, resultBefor, resultAfter, result);
     }
 
     public FractionalNumber rounding(int order) {
         List<Integer> result = new ArrayList<>();
         List<Integer> thisResult = new ArrayList<>();
         if (after <= order) {
-            numberUnion.add(0, sign);
-            return new FractionalNumber(numberUnion.size() - after, after, numberUnion);
+            return new FractionalNumber(sign, numberUnion.size() - after, after, numberUnion);
         } else {
-            thisResult.addAll(numberUnion.subList(0, before + order + 1));
+            thisResult.addAll(numberUnion.subList(0, before + order));
             int resultBefore;
             int resultAfter;
             if (numberUnion.get(before + order) >= 5) {
@@ -397,17 +285,17 @@ public final class FractionalNumber {
                 for (int i = order; i > 0; i--) {
                     result.add(0, 0);
                 }
-                return new FractionalNumber(before, order, thisResult).plus(new FractionalNumber(resultBefore, resultAfter, result));
+                return new FractionalNumber(sign, before, order, thisResult).plus(new FractionalNumber(sign, resultBefore, resultAfter, result));
             } else {
                 resultBefore = before;
                 resultAfter = order;
-                result.addAll(numberUnion.subList(0, before + order + 1));
-                return new FractionalNumber(resultBefore, resultAfter, result);
+                result.addAll(numberUnion.subList(0, before + order));
+                return new FractionalNumber(sign, resultBefore, resultAfter, result);
             }
         }
     }
 
-    public FractionalNumber(double n){
+    public FractionalNumber(double n) {
         this(Double.toString(n));
     }
 
@@ -426,8 +314,8 @@ public final class FractionalNumber {
     @Override
     public String toString() {
         StringBuilder result = new StringBuilder();
-        if (numberUnion.get(0) == 1) result.append("-");
-        for (int i = 1; i < before; i++) {
+        if (sign == false) result.append("-");
+        for (int i = 0; i < before; i++) {
             result.append(numberUnion.get(i));
         }
         if (after != 0) result.append(".");

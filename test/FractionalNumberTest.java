@@ -10,19 +10,14 @@ public class FractionalNumberTest {
     @Test
     public void testToString() throws Exception {
         List<Integer> numberUnion = Arrays.asList(0, -1, 8, 9, 2, 1);
-        assertEquals("-189.21", new FractionalNumber(4, 2, numberUnion).toString());
+        assertEquals("-189.21", new FractionalNumber("-189.21").toString());
     }
 
     @Test
     public void plus() {
-        List<Integer> numberUnion = new ArrayList<>();
-        List<Integer> otherNumberUnion = new ArrayList<>();
-        Collections.addAll(numberUnion, -1, 3, 9);
-        Collections.addAll(otherNumberUnion, 1, 3, 9);
         assertEquals("-0.6",(new FractionalNumber("-0.9").plus(new FractionalNumber("0.3"))).toString());
         assertEquals("-1.2",(new FractionalNumber("-0.9").plus(new FractionalNumber("-0.3"))).toString());
         assertEquals("-1.0", (new FractionalNumber("-0.6").plus(new FractionalNumber("-0.4"))).toString());
-        assertEquals("00.0", (new FractionalNumber(2, 1, numberUnion).plus(new FractionalNumber(2, 1, otherNumberUnion))).toString());
         assertEquals("110.50", (new FractionalNumber("55.45").plus(new FractionalNumber("55.05"))).toString());
         assertEquals("1118888.9999",(new FractionalNumber("1000000.101").plus(new FractionalNumber("118888.8989"))).toString());
         assertEquals("-30.9", (new FractionalNumber("-15.6").plus(new FractionalNumber("-15.3"))).toString());
@@ -36,12 +31,7 @@ public class FractionalNumberTest {
 
     @Test
     public void minus() {
-        List<Integer> numberUnion = new ArrayList<>();
-        List<Integer> otherNumberUnion = new ArrayList<>();
-        Collections.addAll(numberUnion, -1, 3);
-        Collections.addAll(otherNumberUnion, -1, 5);
         assertEquals("-1.0", (new FractionalNumber("-0.6").minus(new FractionalNumber("0.4"))).toString());
-        assertEquals("0.2", (new FractionalNumber(1, 1, numberUnion).minus(new FractionalNumber(1, 1, otherNumberUnion))).toString());
         assertEquals("-3.0", (new FractionalNumber("5.9").minus(new FractionalNumber("8.9"))).toString());
         assertEquals("0.0", (new FractionalNumber("8.9").minus(new FractionalNumber("8.9"))).toString());
         assertEquals("-14.8", (new FractionalNumber("-5.9").minus(new FractionalNumber("8.9"))).toString());
@@ -84,6 +74,7 @@ public class FractionalNumberTest {
         assertEquals(9.99, new FractionalNumber("9.99").toDouble(), 1e-5);
         assertEquals(0.123456789, new FractionalNumber("0.123456789").toDouble(), 1e-5);
         assertEquals(0.99, new FractionalNumber("0.99").toDouble(), 1e-5);
+        assertEquals(3.0, new FractionalNumber("3").toDouble(), 1e-5);
     }
 
 }
