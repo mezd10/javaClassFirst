@@ -9,7 +9,6 @@ public class FractionalNumberTest {
 
     @Test
     public void testToString() throws Exception {
-        List<Integer> numberUnion = Arrays.asList(0, -1, 8, 9, 2, 1);
         assertEquals("-189.21", new FractionalNumber("-189.21").toString());
     }
 
